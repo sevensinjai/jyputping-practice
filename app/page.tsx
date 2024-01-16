@@ -6,7 +6,6 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import HelpCenterOutlinedIcon from '@mui/icons-material/HelpCenterOutlined';
 
 // read json file
 
@@ -24,9 +23,16 @@ interface LyricsContainer {
   wrongIndex: number[];
 }
 
+interface renderLyricContainerInterface {
+  lyrics: LyricArray;
+  currentIndex: number;
+  wrongIndex: number[];
+  sideLimit: number;
+}
+
 const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wrongIndex }) => {
   const sideLimit = 4;
-  const renderLyricContainer = ({ lyrics, currentIndex, wrongIndex, sideLimit }) => {
+  const renderLyricContainer: React.FC<renderLyricContainerInterface> = ({ lyrics, currentIndex, wrongIndex, sideLimit }) => {
     const lyricContainers = []
     for (let i = currentIndex - sideLimit; i <= currentIndex + sideLimit; i++) {
       if (i >= 0 && i < lyrics.length) {
