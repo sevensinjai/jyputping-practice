@@ -1,113 +1,199 @@
-import Image from 'next/image'
+'use client'
+
+import { useState, useMemo } from 'react';
+
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import HelpCenterOutlinedIcon from '@mui/icons-material/HelpCenterOutlined';
+
+// read json file
+
+interface lyric {
+  answer: string;
+  value: string;
+}
+interface LyricArray extends Array<lyric> { };
+
+const lyrics: LyricArray = require('./lyrics.json')
+
+interface LyricsContainer {
+  lyrics: LyricArray;
+  currentIndex: number;
+  wrongIndex: number[];
+}
+
+const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wrongIndex }) => {
+  const sideLimit = 4;
+  const renderLyricContainer = ({ lyrics, currentIndex, wrongIndex, sideLimit }) => {
+    const lyricContainers = []
+    for (let i = currentIndex - sideLimit; i <= currentIndex + sideLimit; i++) {
+      if (i >= 0 && i < lyrics.length) {
+        const lyric = lyrics[i]
+        const valueColor = i == currentIndex ? 'black' : 'grey'
+        lyricContainers.push(
+          <Box
+            key={'lyric_container_' + i}
+            // horizontally aligns children
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+            }}
+          >
+            <Typography variant="h6" component="div" gutterBottom style={{ color: 'grey' }}>
+              {
+                wrongIndex.includes(i) ? <div style={{ color: 'red' }}> {lyric.answer}</div> :
+                  i < currentIndex ? <div style={{ color: 'green' }}> {lyric.answer} </div> :
+                    lyric.answer.split("").map((i) => {
+                      return '.'
+                    })
+              }
+            </Typography>
+            <Typography variant="h3" component="div" gutterBottom style={{ color: valueColor }}>
+              {lyric.value}
+            </Typography>
+          </Box>
+        )
+      }
+    }
+    return lyricContainers
+
+  }
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+      }}
+    >
+      {
+        renderLyricContainer({ lyrics, currentIndex, wrongIndex, sideLimit })
+      }
+      {/* wrong count indicator */}
+    </Box>
+  )
+}
+
+interface InputArea {
+  lyric: lyric;
+  callback: () => void;
+  wrongCallback: () => void;
+}
+const InputArea: React.FC<InputArea> = ({ lyric, callback, wrongCallback }) => {
+  const [wrongCount, setWrongCount] = useState(0)
+  const maxWrongCount = 3
+  const myCallback = (event: any) => {
+    if (event.keyCode == 13) {
+      event.preventDefault(); // prevent default on enter key pressed behavior
+      if (event.target.value == lyric.answer) {
+        event.target.value = ""
+        setWrongCount(0)
+        callback()
+      } else {
+        myWrongCallback(wrongCount, event)
+      }
+    }
+  }
+  const myWrongCallback = (wrongCount: number, event: any) => {
+    if (wrongCount < maxWrongCount) {
+      setWrongCount(wrongCount + 1)
+    } else {
+      wrongCallback()
+      setWrongCount(0)
+    }
+  }
+
+  const renderWrongCountDot = (wrongCount: number) => {
+    return new Array(wrongCount).fill(".")
+  }
+  return (
+    <Box
+      component="form"
+      sx={{
+        '& > :not(style)': { m: 1, width: '25ch' },
+      }}
+      noValidate
+      autoComplete="off"
+      flexDirection='row'
+      justifyContent="center"
+      alignItems="center"
+
+    >
+      <TextField id="outlined-basic" label="jyutping" variant="outlined"
+        onKeyDown={myCallback}
+      />
+      <Typography variant="h6" component="div" gutterBottom style={{ color: 'grey', width: '100%' }}>
+        {renderWrongCountDot(wrongCount)}
+      </Typography>
+    </Box>
+  )
+}
 
 export default function Home() {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [wrongIndex, setWrongIndex] = useState([] as number[])
+  const maxLyricHistoryCount = 9
+  const handleOnEnter: () => void = () => {
+    if (currentIndex < lyrics.length - 1) {
+      setCurrentIndex(currentIndex + 1)
+    }
+  }
+  const handleOnWrong: () => void = () => {
+    if (wrongIndex.length > maxLyricHistoryCount) {
+      wrongIndex.shift()
+    }
+    const newWrongIndex = [...wrongIndex, currentIndex]
+    setWrongIndex(newWrongIndex)
+  }
+
+  const handleResume: (event: any) => void = (event) => {
+    if (event.keyCode == 13) {
+      event.preventDefault(); // prevent default on enter key pressed behavior
+      const value = parseInt(event.target.value)
+      if (value < lyrics.length) {
+        setCurrentIndex(value)
+        setWrongIndex([])
+      }
+    }
+  }
+  const filteredLyrics = lyrics.filter((lyric: any) => {
+    return lyric.value != " "
+  })
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh" // This makes sure the Box takes up the full height of the viewport
+      >
+        <Container maxWidth='sm' style={{ textAlign: 'center' }}>
+          <Box
+            component="form"
+            sx={{
+              '& > :not(style)': { m: 1, width: '25ch' },
+            }}
+            noValidate
+            autoComplete="off"
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+            <TextField id="outlined-basic" label="Resume to..." variant="outlined"
+              type="number"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onKeyDown={handleResume}
             />
-          </a>
-        </div>
-      </div>
+          </Box>
+          <LyricsContainer lyrics={filteredLyrics} currentIndex={currentIndex} wrongIndex={wrongIndex} />
+          <InputArea lyric={filteredLyrics[currentIndex]} callback={handleOnEnter} wrongCallback={handleOnWrong} />
+        </Container>
+      </Box>
+    </>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
   )
 }
