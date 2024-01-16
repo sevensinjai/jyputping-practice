@@ -1,3 +1,7 @@
+# jyputping-practice
+By looking at the typo in the repo name, you know I need to practice jyutping...
+
+# Next.js
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
