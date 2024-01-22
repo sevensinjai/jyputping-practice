@@ -1,17 +1,21 @@
 'use client'
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import SettingDialog from './SettingDialog';
 
 // read json file
 
 interface lyric {
-  answer: string;
+  full: string;
   value: string;
+  onset: string;
+  final: string;
+  tone: string;
 }
 interface LyricArray extends Array<lyric> { };
 
@@ -51,9 +55,9 @@ const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wron
           >
             <Typography variant="h6" component="div" gutterBottom style={{ color: 'grey' }}>
               {
-                wrongIndex.includes(i) ? <div style={{ color: 'red' }}> {lyric.answer}</div> :
-                  i < currentIndex ? <div style={{ color: 'green' }}> {lyric.answer} </div> :
-                    lyric.answer.split("").map((i) => {
+                wrongIndex.includes(i) ? <div style={{ color: 'red' }}> {lyric.full}</div> :
+                  i < currentIndex ? <div style={{ color: 'green' }}> {lyric.full} </div> :
+                    lyric.full.split("").map((i) => {
                       return '.'
                     })
               }
@@ -87,21 +91,47 @@ const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wron
 
 interface InputArea {
   lyric: lyric;
+  mode: string;
   callback: () => void;
   wrongCallback: () => void;
 }
-const InputArea: React.FC<InputArea> = ({ lyric, callback, wrongCallback }) => {
+const InputArea: React.FC<InputArea> = ({ lyric, mode, callback, wrongCallback }) => {
   const [wrongCount, setWrongCount] = useState(0)
   const maxWrongCount = 3
   const myCallback = (event: any) => {
     if (event.keyCode == 13) {
       event.preventDefault(); // prevent default on enter key pressed behavior
-      if (event.target.value == lyric.answer) {
-        event.target.value = ""
-        setWrongCount(0)
-        callback()
-      } else {
-        myWrongCallback(wrongCount, event)
+
+      switch (mode) {
+        case 'full':
+          if (event.target.value == lyric.full) {
+            event.target.value = ""
+            setWrongCount(0)
+            callback()
+          } else {
+            myWrongCallback(wrongCount, event)
+          }
+          break;
+        case 'onset':
+          if (event.target.value == lyric.onset) {
+            event.target.value = ""
+            setWrongCount(0)
+            callback()
+          } else {
+            myWrongCallback(wrongCount, event)
+          }
+          break;
+        case 'final':
+          if (event.target.value == lyric.final) {
+            event.target.value = ""
+            setWrongCount(0)
+            callback()
+          } else {
+            myWrongCallback(wrongCount, event)
+          }
+          break;
+        default:
+          break
       }
     }
   }
@@ -130,7 +160,7 @@ const InputArea: React.FC<InputArea> = ({ lyric, callback, wrongCallback }) => {
       alignItems="center"
 
     >
-      <TextField id="outlined-basic" label="jyutping" variant="outlined"
+      <TextField id="outlined-basic" label={"jyutping - " + mode} variant="outlined"
         onKeyDown={myCallback}
       />
       <Typography variant="h6" component="div" gutterBottom style={{ color: 'grey', width: '100%' }}>
@@ -143,6 +173,8 @@ const InputArea: React.FC<InputArea> = ({ lyric, callback, wrongCallback }) => {
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [wrongIndex, setWrongIndex] = useState([] as number[])
+  const [mode, setMode] = useState('full' as string)
+
   const maxLyricHistoryCount = 9
   const handleOnEnter: () => void = () => {
     if (currentIndex < lyrics.length - 1) {
@@ -157,16 +189,6 @@ export default function Home() {
     setWrongIndex(newWrongIndex)
   }
 
-  const handleResume: (event: any) => void = (event) => {
-    if (event.keyCode == 13) {
-      event.preventDefault(); // prevent default on enter key pressed behavior
-      const value = parseInt(event.target.value)
-      if (value < lyrics.length) {
-        setCurrentIndex(value)
-        setWrongIndex([])
-      }
-    }
-  }
   const filteredLyrics = lyrics.filter((lyric: any) => {
     return lyric.value != " "
   })
@@ -179,24 +201,18 @@ export default function Home() {
         height="100vh" // This makes sure the Box takes up the full height of the viewport
       >
         <Container maxWidth='sm' style={{ textAlign: 'center' }}>
-          <Box
-            component="form"
-            sx={{
-              '& > :not(style)': { m: 1, width: '25ch' },
-            }}
-            noValidate
-            autoComplete="off"
-          >
-            <TextField id="outlined-basic" label="Resume to..." variant="outlined"
-              type="number"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onKeyDown={handleResume}
+          <Box sx={{ mb: 2 }}>
+            <SettingDialog
+              onResumeCallback={setCurrentIndex}
+              onModeChangeCallback={setMode}
+              currentIndex={currentIndex}
+              currentMode={mode}
             />
           </Box>
           <LyricsContainer lyrics={filteredLyrics} currentIndex={currentIndex} wrongIndex={wrongIndex} />
-          <InputArea lyric={filteredLyrics[currentIndex]} callback={handleOnEnter} wrongCallback={handleOnWrong} />
+          <InputArea lyric={filteredLyrics[currentIndex]} callback={handleOnEnter} wrongCallback={handleOnWrong} mode={
+            mode
+          } />
         </Container>
       </Box>
     </>
