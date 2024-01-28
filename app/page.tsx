@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import SettingDialog from './SettingDialog';
+import SettingDialog from './SettingDrawer';
 
 // read json file
 
@@ -25,6 +25,7 @@ interface LyricsContainer {
   lyrics: LyricArray;
   currentIndex: number;
   wrongIndex: number[];
+  mode: string;
 }
 
 interface renderLyricContainerInterface {
@@ -34,7 +35,7 @@ interface renderLyricContainerInterface {
   sideLimit: number;
 }
 
-const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wrongIndex }) => {
+const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wrongIndex, mode }) => {
   const sideLimit = 4;
   const renderLyricContainer: React.FC<renderLyricContainerInterface> = ({ lyrics, currentIndex, wrongIndex, sideLimit }) => {
     const lyricContainers = []
@@ -42,6 +43,17 @@ const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wron
       if (i >= 0 && i < lyrics.length) {
         const lyric = lyrics[i]
         const valueColor = i == currentIndex ? 'black' : 'grey'
+        let answer = lyric.full
+        switch (mode) {
+          case 'onset':
+            answer = lyric.onset
+            break;
+          case 'final':
+            answer = lyric.final
+            break;
+          default:
+            break;
+        }
         lyricContainers.push(
           <Box
             key={'lyric_container_' + i}
@@ -55,9 +67,9 @@ const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wron
           >
             <Typography variant="h6" component="div" gutterBottom style={{ color: 'grey' }}>
               {
-                wrongIndex.includes(i) ? <div style={{ color: 'red' }}> {lyric.full}</div> :
-                  i < currentIndex ? <div style={{ color: 'green' }}> {lyric.full} </div> :
-                    lyric.full.split("").map((i) => {
+                wrongIndex.includes(i) ? <div style={{ color: 'red' }}> {answer}</div> :
+                  i < currentIndex ? <div style={{ color: 'green' }}> {answer} </div> :
+                    answer.split("").map((i) => {
                       return '.'
                     })
               }
@@ -207,9 +219,10 @@ export default function Home() {
               onModeChangeCallback={setMode}
               currentIndex={currentIndex}
               currentMode={mode}
+              maxIndex={filteredLyrics.length}
             />
           </Box>
-          <LyricsContainer lyrics={filteredLyrics} currentIndex={currentIndex} wrongIndex={wrongIndex} />
+          <LyricsContainer mode={mode} lyrics={filteredLyrics} currentIndex={currentIndex} wrongIndex={wrongIndex} />
           <InputArea lyric={filteredLyrics[currentIndex]} callback={handleOnEnter} wrongCallback={handleOnWrong} mode={
             mode
           } />
