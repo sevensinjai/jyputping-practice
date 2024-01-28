@@ -1,0 +1,34 @@
+{
+  "final": {
+    "i": ["i", "ip", "it", "ik", "im", "in", "ing", "iu"],
+    "yu": ["yu", "yuk", "yun"],
+    "u": ["u", "up", "ut", "uk", "um", "un", "ung", "ui"],
+    "e": ["e", "ep", "et", "ek", "em", "en", "eng", "ei", "eu"],
+    "eot": ["eot", "eon", "eoi"],
+    "oe": ["oe", "oek", "oeng"],
+    "o": ["o", "ot", "ok", "on", "ong", "oi", "ou"],
+    "a": ["a", "ap", "at", "ak", "am", "an", "ang", "ai", "au"],
+    "aa": ["aa", "aap", "aat", "aak", "aam", "aan", "aang", "aai", "aau"]
+  },
+  "onset": {
+    "b": true,
+    "p": true,
+    "m": true,
+    "f": true,
+    "d": true,
+    "t": true,
+    "n": true,
+    "l": true,
+    "g": true,
+    "k": true,
+    "ng": true,
+    "h": true,
+    "gw": true,
+    "kw": true,
+    "w": true,
+    "z": true,
+    "c": true,
+    "s": true,
+    "j": true
+  }
+}

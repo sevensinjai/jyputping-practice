@@ -9,15 +9,30 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import { useState } from 'react'
 import Drawer from '@mui/material/Drawer';
+import FormGroup from '@mui/material/FormGroup';
+import Checkbox from '@mui/material/Checkbox';
 
-
+const defaultFilterSetting: any = require('./filterSetting.json')
 
 export default function SimpleDialogContainer({
-    onResumeCallback, onModeChangeCallback, currentIndex, currentMode, maxIndex
-}: { onResumeCallback: (index: number) => void, onModeChangeCallback: (mode: string) => void, currentIndex: number, currentMode: string, maxIndex: number }) {
+    onResumeCallback, onModeChangeCallback, currentIndex, currentMode, maxIndex, onFilterChangeCallback
+}: { onResumeCallback: (index: number) => void, onModeChangeCallback: (mode: string) => void, currentIndex: number, currentMode: string, maxIndex: number, onFilterChangeCallback: (filter: any) => void }) {
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState(currentMode)
     const [resumeIndex, setResumeIndex] = useState(currentIndex)
+    const [filterState, setFilterState] = useState({
+        final: {
+            i: true,
+            yu: true,
+            u: true,
+            e: true,
+            eot: true,
+            oe: true,
+            o: true,
+            a: true,
+            aa: true
+        }
+    })
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -39,6 +54,22 @@ export default function SimpleDialogContainer({
             onResumeCallback(newValue as number);
         }
     };
+
+    // const filterSettingToCheckBox = (filterSetting: any) => {
+
+    //     return <></>
+    // }
+    const handleOnFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const final = event.target.name.split('_')[1]
+        const newFilterFinalState = { ...filterState.final, [final]: !filterState.final[final] }
+        const newFilterState = { ...filterState, final: newFilterFinalState }
+
+        setFilterState(newFilterState)
+        if (onFilterChangeCallback) {
+            onFilterChangeCallback(newFilterState)
+        }
+    }
+
     return (
         <div>
             <Button variant="outlined" onClick={handleClickOpen}>
@@ -70,6 +101,70 @@ export default function SimpleDialogContainer({
                             <FormControlLabel value="onset" control={<Radio />} label="Onset(聲母)" />
                             <FormControlLabel value="final" control={<Radio />} label="Finals(韻母)" />
                         </RadioGroup>
+                    </FormControl>
+                    <Typography id="filter" component={'div'} gutterBottom>
+                        Final Filter
+                    </Typography>
+                    <FormControl component="fieldset" variant="standard">
+                        {/* <FormLabel component="legend">Assign responsibility</FormLabel> */}
+                        <FormGroup>
+                            <Container>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox checked={filterState['final']['i']} onChange={handleOnFilterChange} name="final_i" />
+                                    }
+                                    label="i"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox checked={filterState['final']['yu']} onChange={handleOnFilterChange} name="final_yu" />
+                                    }
+                                    label="yu"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox checked={filterState['final']['u']} onChange={handleOnFilterChange} name="final_u" />
+                                    }
+                                    label="u"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox checked={filterState['final']['e']} onChange={handleOnFilterChange} name="final_e" />
+                                    }
+                                    label="e"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox checked={filterState['final']['eot']} onChange={handleOnFilterChange} name="final_eot" />
+                                    }
+                                    label="eot"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox checked={filterState['final']['oe']} onChange={handleOnFilterChange} name="final_oe" />
+                                    }
+                                    label="oe"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox checked={filterState['final']['o']} onChange={handleOnFilterChange} name="final_o" />
+                                    }
+                                    label="o"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox checked={filterState['final']['a']} onChange={handleOnFilterChange} name="final_a" />
+                                    }
+                                    label="a"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox checked={filterState['final']['aa']} onChange={handleOnFilterChange} name="final_aa" />
+                                    }
+                                    label="aa"
+                                />
+                            </Container>
+                        </FormGroup>
                     </FormControl>
                 </Container>
             </Drawer>

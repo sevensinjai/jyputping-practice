@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import SettingDialog from './SettingDrawer';
+import SettingDrawer from './SettingDrawer';
 
 // read json file
 
@@ -20,12 +20,19 @@ interface lyric {
 interface LyricArray extends Array<lyric> { };
 
 const lyrics: LyricArray = require('./lyrics.json')
+interface filterSetting {
+  onset: boolean[];
+  final: any[];
+}
+
+const filterSetting: filterSetting = require('./filterSetting.json')
 
 interface LyricsContainer {
   lyrics: LyricArray;
   currentIndex: number;
   wrongIndex: number[];
   mode: string;
+  filter: filterSetting;
 }
 
 interface renderLyricContainerInterface {
@@ -33,11 +40,12 @@ interface renderLyricContainerInterface {
   currentIndex: number;
   wrongIndex: number[];
   sideLimit: number;
+  filter: filterSetting;
 }
 
-const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wrongIndex, mode }) => {
+const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wrongIndex, mode, filter }) => {
   const sideLimit = 4;
-  const renderLyricContainer: React.FC<renderLyricContainerInterface> = ({ lyrics, currentIndex, wrongIndex, sideLimit }) => {
+  const renderLyricContainer: React.FC<renderLyricContainerInterface> = ({ lyrics, currentIndex, wrongIndex, sideLimit, filter }) => {
     const lyricContainers = []
     for (let i = currentIndex - sideLimit; i <= currentIndex + sideLimit; i++) {
       if (i >= 0 && i < lyrics.length) {
@@ -54,6 +62,14 @@ const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wron
           default:
             break;
         }
+
+        let shouldAnswerBeFiltered = false
+        const finalEntries = Object.entries(filter.final)
+        const selectedFinal = finalEntries.map((entry: any) => { return entry[1] }).flat(1)
+        if (selectedFinal.indexOf(answer) < 0) {
+          shouldAnswerBeFiltered = true
+        }
+
         lyricContainers.push(
           <Box
             key={'lyric_container_' + i}
@@ -68,7 +84,8 @@ const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wron
             <Typography variant="h6" component="div" gutterBottom style={{ color: 'grey' }}>
               {
                 wrongIndex.includes(i) ? <div style={{ color: 'red' }}> {answer}</div> :
-                  i < currentIndex ? <div style={{ color: 'green' }}> {answer} </div> :
+                  !shouldAnswerBeFiltered || i < currentIndex ?
+                    <><div style={{ color: 'blue' }}> {answer}</div></> :
                     answer.split("").map((i) => {
                       return '.'
                     })
@@ -94,7 +111,7 @@ const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wron
       }}
     >
       {
-        renderLyricContainer({ lyrics, currentIndex, wrongIndex, sideLimit })
+        renderLyricContainer({ lyrics, currentIndex, wrongIndex, sideLimit, filter })
       }
       {/* wrong count indicator */}
     </Box>
@@ -186,6 +203,7 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [wrongIndex, setWrongIndex] = useState([] as number[])
   const [mode, setMode] = useState('full' as string)
+  const [currentFilter, setCurrentFilter] = useState(filterSetting as filterSetting)
 
   const maxLyricHistoryCount = 9
   const handleOnEnter: () => void = () => {
@@ -201,6 +219,23 @@ export default function Home() {
     setWrongIndex(newWrongIndex)
   }
 
+  const handleOnFilterChange: (e: any) => void = (e) => {
+    const finalEntries = Object.entries(e.final)
+    const selectedFinal = finalEntries.filter((entry: any) => {
+      return entry[1] == true
+    })
+    const selectedFinalInObject = selectedFinal.reduce((acc, cur) => {
+      acc[cur[0]] = filterSetting.final[cur[0]]
+      return acc
+    }, {})
+    const newFilter = {
+      onset: filterSetting.onset,
+      final: selectedFinalInObject
+    }
+    setCurrentFilter(newFilter as filterSetting)
+
+  }
+
   const filteredLyrics = lyrics.filter((lyric: any) => {
     return lyric.value != " "
   })
@@ -214,18 +249,22 @@ export default function Home() {
       >
         <Container maxWidth='sm' style={{ textAlign: 'center' }}>
           <Box sx={{ mb: 2 }}>
-            <SettingDialog
+            <SettingDrawer
               onResumeCallback={setCurrentIndex}
               onModeChangeCallback={setMode}
               currentIndex={currentIndex}
               currentMode={mode}
               maxIndex={filteredLyrics.length}
+              onFilterChangeCallback={handleOnFilterChange}
             />
           </Box>
-          <LyricsContainer mode={mode} lyrics={filteredLyrics} currentIndex={currentIndex} wrongIndex={wrongIndex} />
+
+          <LyricsContainer mode={mode} lyrics={filteredLyrics} currentIndex={currentIndex} wrongIndex={wrongIndex} filter={currentFilter} />
           <InputArea lyric={filteredLyrics[currentIndex]} callback={handleOnEnter} wrongCallback={handleOnWrong} mode={
-            mode
-          } />
+            mode} filter={currentFilter} />
+          <Typography variant="body1" component="div" gutterBottom>
+            {currentIndex + 1 + "/" + filteredLyrics.length}
+          </Typography>
         </Container>
       </Box>
     </>
