@@ -14,13 +14,29 @@ import Checkbox from '@mui/material/Checkbox';
 
 const defaultFilterSetting: any = require('./filterSetting.json')
 
+
+interface FinalFilter {
+    i: boolean,
+    yu: boolean,
+    u: boolean,
+    e: boolean,
+    eot: boolean,
+    oe: boolean,
+    o: boolean,
+    a: boolean,
+    aa: boolean
+}
+interface FilterSetting {
+    final: FinalFilter
+}
+
 export default function SimpleDialogContainer({
     onResumeCallback, onModeChangeCallback, currentIndex, currentMode, maxIndex, onFilterChangeCallback
 }: { onResumeCallback: (index: number) => void, onModeChangeCallback: (mode: string) => void, currentIndex: number, currentMode: string, maxIndex: number, onFilterChangeCallback: (filter: any) => void }) {
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState(currentMode)
     const [resumeIndex, setResumeIndex] = useState(currentIndex)
-    const [filterState, setFilterState] = useState({
+    const [filterState, setFilterState] = useState<FilterSetting>({
         final: {
             i: true,
             yu: true,
@@ -55,12 +71,8 @@ export default function SimpleDialogContainer({
         }
     };
 
-    // const filterSettingToCheckBox = (filterSetting: any) => {
-
-    //     return <></>
-    // }
     const handleOnFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const final = event.target.name.split('_')[1]
+        const final = event.target.name.split('_')[1] as keyof FinalFilter
         const newFilterFinalState = { ...filterState.final, [final]: !filterState.final[final] }
         const newFilterState = { ...filterState, final: newFilterFinalState }
 
@@ -103,7 +115,7 @@ export default function SimpleDialogContainer({
                         </RadioGroup>
                     </FormControl>
                     <Typography id="filter" component={'div'} gutterBottom>
-                        Final Filter
+                        Masked Final Setting
                     </Typography>
                     <FormControl component="fieldset" variant="standard">
                         {/* <FormLabel component="legend">Assign responsibility</FormLabel> */}

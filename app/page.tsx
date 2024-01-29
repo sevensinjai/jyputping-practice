@@ -22,7 +22,9 @@ interface LyricArray extends Array<lyric> { };
 const lyrics: LyricArray = require('./lyrics.json')
 interface filterSetting {
   onset: boolean[];
-  final: any[];
+  final: {
+    [key: string]: string[];
+  };
 }
 
 const filterSetting: filterSetting = require('./filterSetting.json')
@@ -84,11 +86,11 @@ const LyricsContainer: React.FC<LyricsContainer> = ({ lyrics, currentIndex, wron
             <Typography variant="h6" component="div" gutterBottom style={{ color: 'grey' }}>
               {
                 wrongIndex.includes(i) ? <div style={{ color: 'red' }}> {answer}</div> :
-                  !shouldAnswerBeFiltered || i < currentIndex ?
-                    <><div style={{ color: 'blue' }}> {answer}</div></> :
-                    answer.split("").map((i) => {
-                      return '.'
-                    })
+                  i < currentIndex ?
+                    <><div style={{ color: 'blue' }}> {answer}</div></> : !shouldAnswerBeFiltered ? <><div style={{ color: 'grey' }}> {answer}</div></> :
+                      answer.split("").map((i) => {
+                        return '.'
+                      })
               }
             </Typography>
             <Typography variant="h3" component="div" gutterBottom style={{ color: valueColor }}>
@@ -225,8 +227,11 @@ export default function Home() {
       return entry[1] == true
     })
     const selectedFinalInObject = selectedFinal.reduce((acc, cur) => {
-      acc[cur[0]] = filterSetting.final[cur[0]]
-      return acc
+      const key = cur[0]
+      return {
+        ...acc,
+        [key]: filterSetting.final[key]
+      }
     }, {})
     const newFilter = {
       onset: filterSetting.onset,
@@ -261,7 +266,7 @@ export default function Home() {
 
           <LyricsContainer mode={mode} lyrics={filteredLyrics} currentIndex={currentIndex} wrongIndex={wrongIndex} filter={currentFilter} />
           <InputArea lyric={filteredLyrics[currentIndex]} callback={handleOnEnter} wrongCallback={handleOnWrong} mode={
-            mode} filter={currentFilter} />
+            mode} />
           <Typography variant="body1" component="div" gutterBottom>
             {currentIndex + 1 + "/" + filteredLyrics.length}
           </Typography>
