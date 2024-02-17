@@ -1,8 +1,5 @@
-# jyputping-practice
-By looking at the typo in the repo name, you know I need to practice jyutping...
-
-
 # to do features
+[x] mc mode
 [] dictation
 
 # Next.js
