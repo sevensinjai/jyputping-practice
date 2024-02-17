@@ -12,8 +12,6 @@ import Drawer from '@mui/material/Drawer';
 import FormGroup from '@mui/material/FormGroup';
 import Checkbox from '@mui/material/Checkbox';
 
-const defaultFilterSetting: any = require('./filterSetting.json')
-
 
 interface FinalFilter {
     i: boolean,
@@ -93,7 +91,7 @@ export default function SimpleDialogContainer({
                 onClose={handleClose}
             >
                 <Container>
-                    <Typography id="discrete-slider" component={'div'} gutterBottom>
+                    <Typography id="discrete-slider" component={'div'} gutterBottom sx={{ mt: 4 }}>
                         Resume to position: {resumeIndex}
                     </Typography>
                     <Slider defaultValue={resumeIndex} value={resumeIndex} onChange={handleResume}
@@ -110,8 +108,8 @@ export default function SimpleDialogContainer({
                             defaultValue={mode}
                         >
                             <FormControlLabel value="full" control={<Radio />} label="Full 全部" />
-                            <FormControlLabel value="onset" control={<Radio />} label="Onset(聲母)" />
-                            <FormControlLabel value="final" control={<Radio />} label="Finals(韻母)" />
+                            <FormControlLabel value="onset" control={<Radio />} label="Onset 聲母" />
+                            <FormControlLabel value="final" control={<Radio />} label="Finals 韻母" />
                         </RadioGroup>
                     </FormControl>
                     <Typography id="filter" component={'div'} gutterBottom>
