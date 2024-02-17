@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -17,7 +17,7 @@ export interface lyric {
   tone: string;
 }
 export interface LyricArray extends Array<lyric> { };
-const lyrics: LyricArray = require('../data/lyrics.json')
+const defaultLyrics: LyricArray = require('../data/lyrics.json')
 
 export interface filterSettingInterface {
   onset: boolean[];
@@ -29,10 +29,12 @@ export interface filterSettingInterface {
 const filterSetting: filterSettingInterface = require('../data/filterSetting.json')
 
 export default function Home() {
+  const [lyrics, setLyrics] = useState(defaultLyrics as LyricArray)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [wrongIndex, setWrongIndex] = useState([] as number[])
   const [mode, setMode] = useState('full' as string)
   const [currentFilter, setCurrentFilter] = useState(filterSetting as filterSettingInterface)
+  const [filteredLyrics, setFilteredLyrics] = useState([] as LyricArray)
 
   const maxLyricHistoryCount = 9
   const handleOnEnter: () => void = () => {
@@ -68,9 +70,25 @@ export default function Home() {
 
   }
 
-  const filteredLyrics = lyrics.filter((lyric: any) => {
-    return lyric.value != " "
-  })
+  const handleonSongChange: (e: any) => void = (e) => {
+    const lyrics: LyricArray = require(`../data/${e}.json`)
+    setLyrics(lyrics)
+  }
+
+
+
+  useEffect(() => {
+    setWrongIndex([])
+    setMode('full')
+    setCurrentFilter(filterSetting as filterSettingInterface)
+    setCurrentIndex(0)
+    const filteredLyrics = lyrics.filter((lyric: any) => {
+      const value = lyric.value.trim()
+      return value != ""
+    })
+    setFilteredLyrics(filteredLyrics)
+  }, [lyrics])
+
   return (
     <>
       <Box
@@ -88,11 +106,15 @@ export default function Home() {
               currentMode={mode}
               maxIndex={filteredLyrics.length}
               onFilterChangeCallback={handleOnFilterChange}
+              onSongChangeCallback={handleonSongChange}
             />
           </Box>
 
           <LyricsContainer mode={mode} lyrics={filteredLyrics} currentIndex={currentIndex} wrongIndex={wrongIndex} filter={currentFilter} />
-          <OptionContainer answer={filteredLyrics[currentIndex].final} onAnswerClicked={handleOnEnter} onWrongClicked={handleOnWrong} />
+          {
+            filteredLyrics.length > 0 &&
+            <OptionContainer answer={filteredLyrics[currentIndex].final} onAnswerClicked={handleOnEnter} onWrongClicked={handleOnWrong} />
+          }
           <Typography variant="body1" component="div" gutterBottom>
             {currentIndex + 1 + "/" + filteredLyrics.length}
           </Typography>
@@ -102,5 +124,6 @@ export default function Home() {
 
   )
 }
+
 
 

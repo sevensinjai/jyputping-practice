@@ -29,8 +29,8 @@ interface FilterSetting {
 }
 
 export default function SimpleDialogContainer({
-    onResumeCallback, onModeChangeCallback, currentIndex, currentMode, maxIndex, onFilterChangeCallback
-}: { onResumeCallback: (index: number) => void, onModeChangeCallback: (mode: string) => void, currentIndex: number, currentMode: string, maxIndex: number, onFilterChangeCallback: (filter: any) => void }) {
+    onResumeCallback, onModeChangeCallback, onSongChangeCallback, currentIndex, currentMode, maxIndex, onFilterChangeCallback
+}: { onResumeCallback: (index: number) => void, onModeChangeCallback: (mode: string) => void, onSongChangeCallback: (filePath: string) => void, currentIndex: number, currentMode: string, maxIndex: number, onFilterChangeCallback: (filter: any) => void }) {
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState(currentMode)
     const [resumeIndex, setResumeIndex] = useState(currentIndex)
@@ -69,6 +69,14 @@ export default function SimpleDialogContainer({
         }
     };
 
+    const handleSongChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const filePath = event.target.value
+        if (onSongChangeCallback) {
+            onSongChangeCallback(filePath)
+            setResumeIndex(0)
+        }
+    }
+
     const handleOnFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const final = event.target.name.split('_')[1] as keyof FinalFilter
         const newFilterFinalState = { ...filterState.final, [final]: !filterState.final[final] }
@@ -90,13 +98,31 @@ export default function SimpleDialogContainer({
                 open={open}
                 onClose={handleClose}
             >
-                <Container>
-                    <Typography id="discrete-slider" component={'div'} gutterBottom sx={{ mt: 4 }}>
+                <Container sx={{ mt: 4, mb: 4 }}>
+                    <Typography id="mode-selector" component={'div'} gutterBottom>
+                        Song
+                    </Typography>
+                    <FormControl>
+                        <RadioGroup
+                            row
+                            name="row-radio-buttons-group"
+                            onChange={handleSongChange}
+                            defaultValue={'lyrics'}
+                        >
+                            <FormControlLabel value="lyrics" control={<Radio />} label="Song 1" />
+                            <FormControlLabel value="lyrics_1" control={<Radio />} label="Song 2" />
+                        </RadioGroup>
+                    </FormControl>
+
+                    <Typography id="discrete-slider" component={'div'} gutterBottom>
                         Resume to position: {resumeIndex}
                     </Typography>
                     <Slider defaultValue={resumeIndex} value={resumeIndex} onChange={handleResume}
                         max={maxIndex - 1}
                     />
+
+
+
                     {/* <Typography id="mode-selector" component={'div'} gutterBottom>
                         Mode
                     </Typography>
