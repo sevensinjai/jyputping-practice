@@ -1,3 +1,6 @@
+# This project will be migrated to another project which uses nextjs and shadcnui
+**coz i just love the simplicity of shadcnui*
+
 # Backlog
 - [x] mc mode
 - [ ] song list or tong si list
